@@ -16,16 +16,40 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
+  CORS(app)
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
   '''
+  @app.after_request
+  def after_request(response):
+
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, true')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS')
+    return response
 
   '''
   @TODO: 
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  @app.route('/categories', methods=['GET'])
+  def get_categories():
+
+    try:
+      # get all categories by querying Category class.
+      categories = Category.query.all()
+
+      # Adjust information by usage of format method.
+      categories_format = [category.format() for category in categories]
+    except:
+
+      abort(500)
+
+    return jsonify({'categories': categories_format,
+                    'success': True,
+                    'total_categories': len(categories_format)})
+
 
 
   '''
@@ -40,6 +64,39 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+
+  def get_question_per_page(request, questions):
+
+    page = request.args.get('page', 1, type=int)
+
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+
+    return questions[start:end]
+
+
+  @app.route('/questions', methods=['GET'])
+  def get_questions():
+
+    questions = Question.query.all()
+    current_questions = get_question_per_page(request, questions)
+
+    current_questions_format = [question.format() for question in current_questions]
+
+    # get all categories by querying Category class.
+    categories = Category.query.all()
+
+    # Adjust information by usage of format method.
+    categories_format = [category.format() for category in categories]
+    categories = [category.get('type') for category in categories_format]
+
+    return jsonify({'questions': current_questions_format,
+                    'total_questions': len(questions),
+                    'current_category': categories[-1],
+                    'categories': categories
+    })
+
+
 
   '''
   @TODO: 
