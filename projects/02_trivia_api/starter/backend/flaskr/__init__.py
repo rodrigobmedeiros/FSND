@@ -13,14 +13,8 @@ def create_app(test_config=None):
   app = Flask(__name__)
   setup_db(app)
   
-  '''
-  @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-  '''
   CORS(app)
 
-  '''
-  @TODO: Use the after_request decorator to set Access-Control-Allow
-  '''
   @app.after_request
   def after_request(response):
 
@@ -40,15 +34,16 @@ def create_app(test_config=None):
       # get all categories by querying Category class.
       categories = Category.query.all()
 
-      # Adjust information by usage of format method.
-      categories_format = [category.format() for category in categories]
+      # Creating the dictionary to return
+      categories_correlation = {category.id: category.type for category in categories}
+
     except:
 
       abort(500)
 
-    return jsonify({'categories': categories_format,
+    return jsonify({'categories': categories_correlation,
                     'success': True,
-                    'total_categories': len(categories_format)})
+                    'total_categories': len(categories_correlation)})
 
 
 
@@ -86,14 +81,15 @@ def create_app(test_config=None):
     # get all categories by querying Category class.
     categories = Category.query.all()
 
-    # Adjust information by usage of format method.
-    categories_format = [category.format() for category in categories]
-    categories = [category.get('type') for category in categories_format]
+    # Creating the dictionary to return
+    categories_correlation = {category.id: category.type for category in categories}
+    
+    current_categories = [question.get('category') for question in current_questions_format]
 
     return jsonify({'questions': current_questions_format,
                     'total_questions': len(questions),
-                    'current_category': categories[-1],
-                    'categories': categories,
+                    'current_category': 'art',
+                    'categories': categories_correlation,
                     'success':True
     })
 
@@ -106,7 +102,7 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
-  @app.route('/questions/<question_id>')
+  @app.route('/questions/<question_id>', methods=['DELETE'])
   def delete_question_by_id(question_id):
 
     question = Question.query.filter(Question.id==question_id).one_or_none()
@@ -130,6 +126,51 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  def add_question():
+
+    body = request.get_json()
+    
+    
+
+    question =  body.get('question')
+    answer =  body.get('answer')
+    difficulty = body.get('difficulty')
+    category = body.get('category')
+    search_term = body.get('searchTerm', '')
+    
+    print(search_term)
+
+    if search_term != '':
+      
+      questions = Question.query.filter(Question.question.contains(body.get('searchTerm')))
+
+      current_questions = get_question_per_page(request, questions)
+
+      current_questions_format = [question.format() for question in current_questions]
+
+      return jsonify({'questions': current_questions_format,
+                      'total_questions': len(current_questions_format),
+                      'current_category':''})
+
+
+    # Insert new question into database
+    question = Question(question, answer, category, difficulty)
+
+    # Persist data
+    question.insert()
+
+    questions = Question.query.all()
+    current_questions = get_question_per_page(request, questions)
+
+    current_questions_format = [question.format() for question in current_questions]
+
+    return jsonify({'questions': current_questions_format,
+                    'total_questions': len(questions),
+                    'current_category': category})
+                    
+
+    
 
   '''
   @TODO: 
@@ -141,6 +182,8 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+
+
 
   '''
   @TODO: 
