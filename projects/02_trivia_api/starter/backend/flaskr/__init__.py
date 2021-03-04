@@ -164,14 +164,14 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
-  @app.route('/search')
+  @app.route('/search', methods=['POST'])
   def return_search_result():
 
     body = request.get_json()
     
     search_term =  body.get('searchTerm')
 
-    questions = Question.query.filter(Question.question.contains(search_term))
+    questions = Question.query.filter(Question.question.contains(search_term)).all()
 
     current_questions = get_question_per_page(request, questions)
 
