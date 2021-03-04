@@ -131,28 +131,10 @@ def create_app(test_config=None):
 
     body = request.get_json()
     
-    
-
     question =  body.get('question')
     answer =  body.get('answer')
     difficulty = body.get('difficulty')
     category = body.get('category')
-    search_term = body.get('searchTerm', '')
-    
-    print(search_term)
-
-    if search_term != '':
-      
-      questions = Question.query.filter(Question.question.contains(body.get('searchTerm')))
-
-      current_questions = get_question_per_page(request, questions)
-
-      current_questions_format = [question.format() for question in current_questions]
-
-      return jsonify({'questions': current_questions_format,
-                      'total_questions': len(current_questions_format),
-                      'current_category':''})
-
 
     # Insert new question into database
     question = Question(question, answer, category, difficulty)
@@ -182,7 +164,24 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/search')
+  def return_search_result():
 
+    body = request.get_json()
+    
+    search_term =  body.get('searchTerm')
+
+    questions = Question.query.filter(Question.question.contains(search_term))
+
+    current_questions = get_question_per_page(request, questions)
+
+    current_questions_format = [question.format() for question in current_questions]
+
+    category=''
+
+    return jsonify({'questions': current_questions_format,
+                    'total_questions': len(questions),
+                    'current_category': category})
 
 
   '''
