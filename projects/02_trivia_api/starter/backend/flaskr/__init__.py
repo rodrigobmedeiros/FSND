@@ -243,6 +243,10 @@ def create_app(test_config=None):
 
     questions_format = [question.format() for question in questions]
 
+    if isempty(questions_format):
+
+      abort(404)
+
     new_question = random.choice(questions_format)
 
     # Avoid return repeated question
@@ -261,6 +265,7 @@ def create_app(test_config=None):
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
+  
   
   return app
 
