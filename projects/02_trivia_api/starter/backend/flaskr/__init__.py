@@ -69,7 +69,7 @@ def create_app(test_config=None):
 
     return questions[start:end]
 
-
+  
   @app.route('/questions', methods=['GET'])
   def get_questions():
 
@@ -299,28 +299,28 @@ def create_app(test_config=None):
 
     return jsonify({'success':False,
                     'error': 500,
-                    'massage': 'Internal server error'}), 500
+                    'message': 'Internal server error'}), 500
 
   @app.errorhandler(404)
   def not_found(error):
 
     return jsonify({'success':False,
                     'error': 404,
-                    'massage': 'not found'}), 404
+                    'message': 'not found'}), 404
 
   @app.errorhandler(400)
   def bad_request(error):
 
     return jsonify({'success':False,
                     'error': 400,
-                    'massage': 'bad request'}), 400
+                    'message': 'bad request'}), 400
 
   @app.errorhandler(422)
   def unprocessable(error):
 
     return jsonify({'success':False,
                     'error': 422,
-                    'massage': 'unprocessable'}), 422
+                    'message': 'unprocessable'}), 422
   
   return app
 

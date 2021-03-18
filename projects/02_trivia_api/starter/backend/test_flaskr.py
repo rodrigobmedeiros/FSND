@@ -54,7 +54,54 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.get_json()['success'], True)
 
     def test_get_question_success(self):
-        pass
+        """
+        Test success of endpoint /questions
+        """
+
+        res = self.client().get('/questions')
+        res_json = res.get_json()
+
+        self.assertEqual(res_json['success'], True)
+        self.assertEqual(len(res_json['questions']), 10)
+
+    def test_page_out_of_range(self):
+        """
+        Test success of endpoint /questions verifying error code if there is zero books in a page.
+        """
+
+        res = self.client().get('/questions?page=1000')
+        res_json = res.get_json()
+
+        self.assertEqual(res_json['success'], False)
+        self.assertEqual(res_json['error'], 404)
+        self.assertEqual(res_json['message'], 'not found')
+
+    def test_delete_entry(self):
+        """
+        Test remove an entry from database.
+        """
+
+        questions = Question.query.all()
+        question = questions[0]
+        question_format = question.format()
+
+        res = self.client().delete(f'/questions/{question_format["id"]}')
+        res_json = res.get_json()
+
+        self.assertEqual(res_json['success'], True)
+        self.assertEqual(res_json['deleted_question']['id'], question_format["id"])
+
+        # Add deleted question into database again
+        new_question = Question(question_format['question'],
+                                question_format['answer'],
+                                question_format['category'],
+                                question_format['difficulty'])
+
+        new_question.insert()
+
+
+
+
 
 
 
